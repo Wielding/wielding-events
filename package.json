@@ -1,20 +1,38 @@
 {
   "name": "wielding-events",
   "version": "1.0.0",
-  "description": "",
+  "description": "Persistent events in localstorage",
   "main": "index.js",
+  "files": [
+    "lib/**/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --config jestconfig.json --watch",
+    "build": "tsc",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Wielding/wielding-events.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["Wielding", "Events", "Typescript"],
+  "author": "andrew@wielding.net",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Wielding/wielding-events/issues"
   },
-  "homepage": "https://github.com/Wielding/wielding-events#readme"
+  "homepage": "https://github.com/Wielding/wielding-events#readme",
+  "devDependencies": {
+    "@types/jest": "^23.3.12",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.5",
+    "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.17.0",
+    "typescript": "^3.2.2"
+  }
 }
