@@ -16,11 +16,18 @@
     "version": "git add -A src",
     "postversion": "git push && git push --tags"
   },
+  "jest": {
+    "setupFiles": ["jest-localstorage-mock"]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Wielding/wielding-events.git"
   },
-  "keywords": ["Wielding", "Events", "Typescript"],
+  "keywords": [
+    "Wielding",
+    "Events",
+    "Typescript"
+  ],
   "author": "andrew@wielding.net",
   "license": "ISC",
   "bugs": {
@@ -30,6 +37,7 @@
   "devDependencies": {
     "@types/jest": "^23.3.12",
     "jest": "^23.6.0",
+    "jest-localstorage-mock": "^2.4.0",
     "ts-jest": "^23.10.5",
     "tslint": "^5.12.1",
     "tslint-config-prettier": "^1.17.0",

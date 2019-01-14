@@ -21,5 +21,7 @@ test('event one received', () => {
   
   expect(eventOneRecieved).toBeTruthy();
 
+  expect(localStorage.getItem('@@events')).toBe('["EVENTONE"]');
+
   testStore.RemoveObserver(eventOneObserver);
 });
