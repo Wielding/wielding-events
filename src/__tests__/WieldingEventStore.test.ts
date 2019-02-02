@@ -15,13 +15,13 @@ test('testStore creation', () => {
 });
 
 test('event one received', () => {
-  const eventOneObserver: WieldingObserver = testStore.AddObserver(onTestEventReceived, "EVENTONE");
+  const eventOneObserver: WieldingObserver = testStore.AddObserver(onTestEventReceived, "@@EVENTONE");
 
-  testStore.Dispatch(new WieldingEvent("EVENTONE", { received: true }))
+  testStore.Dispatch(new WieldingEvent("@@EVENTONE", { received: true }))
   
   expect(eventOneRecieved).toBeTruthy();
 
-  expect(localStorage.getItem('@@events')).toBe('["EVENTONE"]');
+  expect(localStorage.getItem('testStore@@events')).toBe('["testStore@@EVENTONE"]'); 
 
   testStore.RemoveObserver(eventOneObserver);
 });

@@ -10,23 +10,6 @@ import { WieldingStoreModel } from './WieldingStoreModel';
 
 export class WieldingEventStore implements IRedumStore {
 
-    public static storeLocal(event: IEvent<any, any>): void {
-        let storedEvents = localStorage.getItem('@@events');
-        let eventArray = [];
-
-        if (storedEvents) {
-            eventArray = JSON.parse(storedEvents);
-        }
-
-        if (eventArray.indexOf(event.type) < 0) {
-            eventArray.push(event.type);
-            storedEvents = JSON.stringify(eventArray);
-            localStorage.setItem('@@events', storedEvents);
-        }
-
-        // localStorage.setItem(event.type, btoa(JSON.stringify(event)));
-        localStorage.setItem(event.type, JSON.stringify(event));
-    }
     private static instance = 0;
 
     public name: string;
@@ -42,25 +25,55 @@ export class WieldingEventStore implements IRedumStore {
         this.loadFromLocal();
     }
 
+    public nameSpace(eventType: string) : string {
+        return this.name + eventType;
+    }
+
+
+    public storeLocal(event: IEvent<any, any>): void {
+        let storedEvents = localStorage.getItem('@@events');
+        let eventArray = [];
+
+        if (storedEvents) {
+            eventArray = JSON.parse(storedEvents);
+        }
+
+        const nameSpacedEventType = this.nameSpace(event.type);
+
+        if (eventArray.indexOf(nameSpacedEventType) < 0) {
+            eventArray.push(nameSpacedEventType);
+            storedEvents = JSON.stringify(eventArray);
+            localStorage.setItem(this.name + '@@events', storedEvents);
+        }
+
+        // localStorage.setItem(event.type, btoa(JSON.stringify(event)));
+        localStorage.setItem(nameSpacedEventType, JSON.stringify(event));
+    }
+
+
     public SetDefaultEvent(event: IEvent<any, any>): void {
-        if (!this.events[event.type]) {
-            WieldingEventStore.storeLocal(event);
-            this.events[event.type] = deepCopy(event);
+        const nameSpacedEventType = this.nameSpace(event.type);
+
+        if (!this.events[nameSpacedEventType]) {
+            this.storeLocal(event);
+            this.events[nameSpacedEventType] = deepCopy(event);
         }
     }
 
-    public AddObserver(callback: any, event: string, source = 'default', late = false): WieldingObserver {
-        if (!this.observers[event]) {
-            this.observers[event] = [];
+    public AddObserver(callback: any, eventName: string, source = 'default', late = false): WieldingObserver {
+        const nameSpacedEventType = this.nameSpace(eventName);
+
+        if (!this.observers[nameSpacedEventType]) {
+            this.observers[nameSpacedEventType] = [];
         }
 
-        this.observers[event].unshift(new WieldingObserver(++this.id, callback, event, `${source}:${WieldingEventStore.instance.toString()}`));
-        this.AddMessage(`Adding: ${source}:${event} id: ${this.observers[event][0].id}`);
+        this.observers[nameSpacedEventType].unshift(new WieldingObserver(++this.id, callback, nameSpacedEventType, `${source}:${WieldingEventStore.instance.toString()}`));
+        this.AddMessage(`Adding: ${source}:${nameSpacedEventType} id: ${this.observers[nameSpacedEventType][0].id}`);
 
         if (late) {
-            if (this.events[event]) {
-                callback(deepCopy(this.events[event]));
-                this.AddMessage(`Late Dispatch: ${source}:${event}`);
+            if (this.events[nameSpacedEventType]) {
+                callback(deepCopy(this.events[nameSpacedEventType]));
+                this.AddMessage(`Late Dispatch: ${source}:${nameSpacedEventType}`);
             }
         }
 
@@ -69,7 +82,7 @@ export class WieldingEventStore implements IRedumStore {
             updated: true
         })), false, false);
 
-        return this.observers[event][0];
+        return this.observers[nameSpacedEventType][0];
     }
 
     public RemoveObserver(observer: WieldingObserver): void {
@@ -96,12 +109,14 @@ export class WieldingEventStore implements IRedumStore {
     }
 
     public GetEventAge(event: IEvent<any, any>): number {
-        if (this.events[event.type]) {
-            if (this.events[event.type].payload.status === 'FAIL') {
+        const nameSpacedEventType = this.nameSpace(event.type);
+
+        if (this.events[nameSpacedEventType]) {
+            if (this.events[nameSpacedEventType].payload.status === 'FAIL') {
                 return 9999999999;
             }
             const currentTime = new Date().getTime();
-            const cachedEvent = this.events[event.type] as WieldingEvent<any, any>;
+            const cachedEvent = this.events[nameSpacedEventType] as WieldingEvent<any, any>;
 
             return currentTime - cachedEvent.updated;
         }
@@ -110,8 +125,10 @@ export class WieldingEventStore implements IRedumStore {
     }
 
     public GetEvent(event: IEvent<any, any>): any {
-        if (this.events[event.type]) {
-            return this.events[event.type];
+        const nameSpacedEventType = this.nameSpace(event.type);
+
+        if (this.events[nameSpacedEventType]) {
+            return this.events[nameSpacedEventType];
         }
 
         return undefined;
@@ -119,13 +136,14 @@ export class WieldingEventStore implements IRedumStore {
 
     public ReDispatch(event: IEvent<any, any>, reason: string): boolean {
         let foundObserver = false;
+        const nameSpacedEventType = this.nameSpace(event.type);
 
-        if (this.events[event.type]) {
-            if (this.observers[event.type]) {
-                for (const observer of this.observers[event.type]) {
+        if (this.events[nameSpacedEventType]) {
+            if (this.observers[nameSpacedEventType]) {
+                for (const observer of this.observers[nameSpacedEventType]) {
                     if (observer.enabled) {
                         this.AddMessage(`Re-Dispatching (reason: ${reason}) : ${observer.type}:${observer.source} id: ${observer.id}`);
-                        observer.callback(deepCopy(this.events[event.type]));
+                        observer.callback(deepCopy(this.events[nameSpacedEventType]));
                         foundObserver = true;
                     }
                 }
@@ -133,7 +151,7 @@ export class WieldingEventStore implements IRedumStore {
         }
 
         if (!foundObserver) {
-            this.AddMessage(`No Observers: ${event.type}`);
+            this.AddMessage(`No Observers: ${nameSpacedEventType}`);
         }
 
         return foundObserver;
@@ -141,17 +159,18 @@ export class WieldingEventStore implements IRedumStore {
 
     public Dispatch(event: IEvent<any, any>, persistent = true, notify = true): void {
         let foundObserver = false;
+        const nameSpacedEventType = this.nameSpace(event.type);
 
         if (persistent) {
-            WieldingEventStore.storeLocal(event);
+            this.storeLocal(event);
         }
 
-        this.events[event.type] = deepCopy(event);
-        if (this.observers[event.type]) {
-            for (const observer of this.observers[event.type]) {
+        this.events[nameSpacedEventType] = deepCopy(event);
+        if (this.observers[nameSpacedEventType]) {
+            for (const observer of this.observers[nameSpacedEventType]) {
                 if (observer.enabled) {
                     this.AddMessage(`Dispatching: ${observer.type}:${observer.source} id: ${observer.id}`);
-                    observer.callback(deepCopy(this.events[event.type]));
+                    observer.callback(deepCopy(this.events[nameSpacedEventType]));
                     foundObserver = true;
                 }
             }
@@ -165,23 +184,25 @@ export class WieldingEventStore implements IRedumStore {
         }
 
         if (!foundObserver) {
-            this.AddMessage(`No Observers: ${event.type}`);
+            this.AddMessage(`No Observers: ${nameSpacedEventType}`);
         }
     }
 
     private loadFromLocal(): void {
-        const storedEvents = localStorage.getItem('@@events');
+        const storedEvents = localStorage.getItem(this.name + '@@events');
 
         if (storedEvents) {
             const eventTypes = JSON.parse(storedEvents);
             try {
                 for (const type of eventTypes) {
+                    const nameSpacedEventType = this.nameSpace(type);
                     // this.events[type] = JSON.parse(atob(localStorage.getItem(type)!));
-                    this.events[type] = JSON.parse(localStorage.getItem(type)!);
+                    this.events[nameSpacedEventType] = JSON.parse(localStorage.getItem(nameSpacedEventType)!);
                 }
             } catch (e) {
                 for (const type of eventTypes) {
-                    delete (this.events[type]);
+                    const nameSpacedEventType = this.nameSpace(type);
+                    delete (this.events[nameSpacedEventType]);
                 }
 
                 localStorage.clear();
@@ -191,9 +212,11 @@ export class WieldingEventStore implements IRedumStore {
 
     private AddMessage(message: string): void {
         if (this.messages.length > 50) {
-            this.messages.splice(0, 1);
-        }
+            if (this.messages.length > 50) {
+                this.messages.splice(0, 1);
+            }
 
-        this.messages.push(message);
+            this.messages.push(message);
+        }
     }
 }
