@@ -188,20 +188,20 @@ export class WieldingEventStore implements IRedumStore {
         }
     }
 
-    private loadFromLocal(): void {
+    public loadFromLocal(): void {
         const storedEvents = localStorage.getItem(this.name + '@@events');
 
         if (storedEvents) {
             const eventTypes = JSON.parse(storedEvents);
             try {
                 for (const type of eventTypes) {
-                    const nameSpacedEventType = this.nameSpace(type);
+                    const nameSpacedEventType = type;
                     // this.events[type] = JSON.parse(atob(localStorage.getItem(type)!));
                     this.events[nameSpacedEventType] = JSON.parse(localStorage.getItem(nameSpacedEventType)!);
                 }
             } catch (e) {
                 for (const type of eventTypes) {
-                    const nameSpacedEventType = this.nameSpace(type);
+                    const nameSpacedEventType = type;
                     delete (this.events[nameSpacedEventType]);
                 }
 

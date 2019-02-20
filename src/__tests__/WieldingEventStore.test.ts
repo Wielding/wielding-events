@@ -15,7 +15,9 @@ test('testStore creation', () => {
 });
 
 test('event one received', () => {
-  const eventOneObserver: WieldingObserver = testStore.AddObserver(onTestEventReceived, "@@EVENTONE");
+  const eventOneObserver: WieldingObserver = testStore.AddObserver(onTestEventReceived, "@@EVENTONE", 'test', true);
+
+  testStore.loadFromLocal();
 
   testStore.Dispatch(new WieldingEvent("@@EVENTONE", { received: true }))
   
