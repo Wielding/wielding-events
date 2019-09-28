@@ -25,11 +25,11 @@ export interface IRedumStore {
     Dispatch(action: IEvent<any, any>, persistent: boolean, notify: boolean): void;
 }
 
-export class JsendResponse<T> {
-    public code?: number;
-    public data?: T;
-    public date?: string;
-    public endpoint?: string;
-    public message?: string;
-    public status?: WieldingEventStatus;
+export interface IJsendResponse<T> {
+    code: number;
+    data: T;
+    date: string;
+    endpoint: string;
+    message: string;
+    status: WieldingEventStatus;
 }
