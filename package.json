@@ -1,6 +1,6 @@
 {
   "name": "wielding-events",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Persistent events in localstorage",
   "main": "index.js",
   "files": [
