@@ -1,5 +1,6 @@
 import { WieldingEvent } from '../WieldingEvent';
-import { WieldingEventStore } from './../WieldingEventStore';
+import { WieldingEventStore } from '../WieldingEventStore';
+import {IEvent} from "../WieldingInterfaces";
 
 import { WieldingObserver } from '../WieldingObserver';
 
@@ -26,4 +27,12 @@ test('event one received', () => {
   expect(localStorage.getItem('testStore@@events')).toBe('["testStore@@EVENTONE"]'); 
 
   testStore.RemoveObserver(eventOneObserver);
+});
+
+test('getEventById', () => {
+  testStore.loadFromLocal();
+
+  const ev = testStore.GetEventById<IEvent<string, {received: false}>>("@@EVENTONE");
+
+  expect(ev.payload.received);
 });

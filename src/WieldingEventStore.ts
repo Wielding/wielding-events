@@ -134,6 +134,16 @@ export class WieldingEventStore implements IRedumStore {
         return undefined;
     }
 
+    public GetEventById<T>(eventId : string) : T {
+        const nameSpacedEventType = this.nameSpace(eventId);
+
+        if (this.events[nameSpacedEventType]) {
+            return this.events[nameSpacedEventType] as any;
+        }
+
+        return undefined as any;
+    }
+
     public ReDispatch(event: IEvent<any, any>, reason: string): boolean {
         let foundObserver = false;
         const nameSpacedEventType = this.nameSpace(event.type);
