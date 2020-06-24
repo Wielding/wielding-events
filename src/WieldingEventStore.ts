@@ -31,7 +31,7 @@ export class WieldingEventStore implements IRedumStore {
 
 
     public storeLocal(event: IEvent<any, any>): void {
-        let storedEvents = localStorage.getItem('@@events');
+        let storedEvents = localStorage.getItem(this.nameSpace('@@events'));
         let eventArray = [];
 
         if (storedEvents) {
@@ -43,7 +43,7 @@ export class WieldingEventStore implements IRedumStore {
         if (eventArray.indexOf(nameSpacedEventType) < 0) {
             eventArray.push(nameSpacedEventType);
             storedEvents = JSON.stringify(eventArray);
-            localStorage.setItem(this.name + '@@events', storedEvents);
+            localStorage.setItem(this.nameSpace('@@events'), storedEvents);
         }
 
         // localStorage.setItem(event.type, btoa(JSON.stringify(event)));
@@ -144,6 +144,17 @@ export class WieldingEventStore implements IRedumStore {
         return undefined as any;
     }
 
+    public GetEventPayload<T>(eventId: string) : T {
+
+        const nameSpacedEventType = this.nameSpace(eventId);
+
+        if (this.events[nameSpacedEventType]) {
+            return this.events[nameSpacedEventType].payload as T;
+        }
+
+        return undefined as any;
+    }
+
     public ReDispatch(event: IEvent<any, any>, reason: string): boolean {
         let foundObserver = false;
         const nameSpacedEventType = this.nameSpace(event.type);
@@ -199,7 +210,7 @@ export class WieldingEventStore implements IRedumStore {
     }
 
     public loadFromLocal(): void {
-        const storedEvents = localStorage.getItem(this.name + '@@events');
+        const storedEvents = localStorage.getItem(this.nameSpace('@@events'));
 
         if (storedEvents) {
             const eventTypes = JSON.parse(storedEvents);

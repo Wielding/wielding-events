@@ -30,9 +30,17 @@ test('event one received', () => {
 });
 
 test('getEventById', () => {
-  testStore.loadFromLocal();
+  const newStore = new WieldingEventStore('testStore');
 
   const ev = testStore.GetEventById<IEvent<string, {received: false}>>("@@EVENTONE");
 
   expect(ev.payload.received);
+});
+
+test('getEventPayload', () => {
+  const newStore = new WieldingEventStore('testStore');
+
+  const ev = testStore.GetEventPayload<{received: false}>("@@EVENTONE");
+
+  expect(ev.received);
 });
